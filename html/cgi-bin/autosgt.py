@@ -96,7 +96,9 @@ def generate_suggestions(prefix):
     # toy example
     fstfile = "/Users/dudy/CSLU/summerIntern/src/all1.fst"
     sym = fst.read_symbols("/Users/dudy/CSLU/summerIntern/src/syms")
-    lm = fst.read(fstfile)    
+    lm = fst.read(fstfile)
+    prefix = prefix.lower()
+    
     
     # look for subtree given prefix
     for (state, ch) in zip(lm.states, prefix):
