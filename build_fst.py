@@ -12,7 +12,7 @@ data = json.loads(json_data)
 for msg in data["Issues"]:
     for cstmr in msg["Messages"]:
         if cstmr["IsFromCustomer"] is False:
-            rep_text.append(cstmr["Text"])
+            rep_text.append(cstmr["Text"].lower())
             
 rep_text = sorted(rep_text)
 # extract words for syms
