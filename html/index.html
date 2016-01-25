@@ -1,0 +1,15 @@
+<html>	
+<form name="search" action="/cgi-bin/suggest_wrapper.py" method="get">
+type your prefix: <input type="text" name="searchbox">
+<input type="submit" value="Submit">
+</form>
+	<body>
+		<script type="text/javascript">
+			$("button").click(function(){
+    			$.getJSON("auto.json", function(data){
+        			console.log(data);
+    			});
+			});
+		</script>
+	</body>
+</html>
