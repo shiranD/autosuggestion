@@ -16,7 +16,7 @@ def dfs(branch, sym):
         sym is the fst symbol system used for branch.
 
     """
-    
+
     f_paths = []
     prev = ""
     for i, path in enumerate(branch.paths()):
@@ -24,13 +24,13 @@ def dfs(branch, sym):
         path_weight = reduce(operator.mul, (arc.weight for arc in path))
         if prev != path_istring:
             f_paths.append((path_istring, path_weight.__float__()))
-            #print('{} / {}'.format(path_istring[1:], path_weight))
+            #print('{} / {}'.format(path_istring, path_weight))
         prev = path_istring
-        
+
     # sort by weight given that one~tropw(0) zero~tropw(inf)
     ranked = sorted(f_paths, key=lambda w: w[1])
     return ranked[:3]
-    
+
 
 def bfs(stateid, allLM, sym):
     """
@@ -44,23 +44,24 @@ def bfs(stateid, allLM, sym):
        sym symbol system of allLM
     OUTPUT:
         branch, an fst of desired branch
-    
+
     """
-    
+
     branch = fst.Acceptor(syms = sym)
     stack = [stateid]
     st_encod = {}
     i = 0
     while stack:
-        
+
         state = allLM[stack[0]]
         if i==0:
             sid = i
             i+=1
         else:
             sid = st_encod[state.stateid]
-        
-        for arc in state:
+
+        for arc in state.arcs:
+
             nextst = arc.nextstate
 
             try:# encode states beginning from id 0
@@ -68,16 +69,16 @@ def bfs(stateid, allLM, sym):
             except:
                 st_encod[nextst] = i
                 i+=1            
-            
+
             stack.append(nextst)
             label = sym.find(arc.ilabel)
             w = arc.weight
             branch.add_arc(sid, st_encod[nextst], label, w)
         stack = stack[1:]
     branch[i-1].final = True
-    
+
     return branch
-    
+
 def generate_suggestions(prefix):
     """
     To extract suggestions the first step was to traverse the fst
@@ -93,41 +94,38 @@ def generate_suggestions(prefix):
        a json file with up to three values for Suggestion entry
     """    
 
-    # toy example
-    fstfile = "/Users/dudy/CSLU/summerIntern/src/all1.fst"
+    fstfile = "/Users/dudy/CSLU/summerIntern/src/prfx_tree.fst"
     sym = fst.read_symbols("/Users/dudy/CSLU/summerIntern/src/syms")
     lm = fst.read(fstfile)
     prefix = prefix.lower()
-    
-    
+
     # look for subtree given prefix
-    for (state, ch) in zip(lm.states, prefix):
+    stateid = 0
+    for ch in prefix:
+        state = lm[stateid]
         for arc in state.arcs:
             if sym.find(arc.ilabel)==ch:
+                print ch
                 stateid = arc.nextstate
-                state = lm[stateid]
                 break
-            
+
     # construct desired subtree (bds)
     reduced = bfs(stateid, lm, sym)
-
     # read strings (dfs)
     top3 = dfs(reduced, sym)
-    
+
     # take first three (if exists)
     suggest = []
     for (suffix, _) in top3:
         suggest.append(suffix)
-    
+
     # dict it    
     result = {}
     result["Suggestions:"] = suggest
-        
+
     # json it
-    json_file = "../auto.json"
+    json_file = "auto.json"
     with open(json_file, "w") as fp:
         json.dump(result, fp)
-        
-    
 
-generate_suggestions("I")
+generate_suggestions("is there anything i can")
